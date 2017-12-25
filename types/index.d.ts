@@ -22,6 +22,7 @@ declare namespace Omise {
     events: Events.IEvents;
     links: Links.ILinks;
     recipients: Recipients.IRecipients;
+    schedules: Schedules.ISchedules;
     sources: Sources.ISources;
     tokens: Tokens.ITokens;
     transactions: Transactions.ITransactions;
@@ -145,6 +146,10 @@ declare namespace Omise {
       transaction: string;
       created: string;
       voided: boolean;
+    }
+
+    interface IChargeScheduleResponse extends Schedules.ISchedulesResponse {
+      charge: Schedules.IChargeSchedule;
     }
   }
 
@@ -380,6 +385,10 @@ declare namespace Omise {
     interface ITransferList extends Pagination.IResponse {
       data: [ITransfer];
     }
+
+    interface ITransferScheduleResponse extends Schedules.ISchedulesResponse {
+      transfer: Schedules.ITransferSchedule;
+    }
   }
 
   namespace Tokens {
@@ -408,6 +417,71 @@ declare namespace Omise {
       created: string;
     }
   }
+
+  namespace Schedules {
+    interface ISchedules {
+      create(req: IRequest, callback?: ResponseCallback<ISchedulesResponse>): Bluebird<ISchedulesResponse>;
+      destroy(scheduleID: string, callback?: ResponseCallback<ISchedulesResponse>): Bluebird<ISchedulesResponse>;
+    }
+
+    interface IRequest {
+      every: number;
+      period: string;
+      start_date: string;
+      end_date: string;
+      on?: IOn;
+      charge?: IChargeSchedule;
+      transfer?: ITransferSchedule;
+    }
+
+    interface ISchedulesResponse extends IBaseResponse {
+      status: string;
+      every: number;
+      period: string;
+      in_words: string;
+      start_date: string;
+      end_date: string;
+      on: IOn;
+      occurrences: Array<IOccurrence>;
+      next_occurrence_dates: Array<string>;
+      created: string;
+      charge?: IChargeSchedule;
+      transfer?: ITransferSchedule;
+    }
+
+    interface IChargeSchedule {
+      amount: number;
+      currency: string;
+      description?: string;
+      customer: string;
+      card?: string;
+    }
+
+    interface ITransferSchedule {
+      recipient?: string;
+      amount?: number;
+      percentage_of_balance?: number;
+      currency?: string;
+    }
+
+    interface IOn {
+      weekdays?: Array<string>;
+      days_of_month?: Array<string>;
+      weekday_of_month?: Array<string>;
+    }
+
+    interface IOccurrence extends IBaseResponse {
+      schedule:	string;
+      schedule_date: string;
+      retry_date:	string;
+      processed_at: string;
+      status: string;
+      message: string;
+      result: any;
+      created: string;
+    }
+  }
+
 
   namespace Pagination {
     interface IRequest {
